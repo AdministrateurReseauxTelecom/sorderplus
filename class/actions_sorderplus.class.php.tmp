@@ -1,0 +1,226 @@
+<?php
+/* Copyright (C) 2018      Guillaume Fraisse	<guillaume@networkart.fr>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * or see http://www.gnu.org/
+ */
+
+/**
+ *	\file       htdocs/custom/sorderplus/class/actions_sorderplus.class.php
+ *	\ingroup    orderplus
+ *	\brief      Fichier qui cré les boutons dans les divers menus
+ */
+
+
+dol_include_once('/core/modules/supplier_order/modules_commandefournisseur.php');
+dol_include_once('/product/stock/class/entrepot.class.php');
+dol_include_once('/core/lib/fourn.lib.php');
+dol_include_once('/fourn/class/fournisseur.commande.class.php');
+dol_include_once('/fourn/class/fournisseur.commande.dispatch.class.php');
+dol_include_once('/projet/class/project.class.php');
+ 
+ 
+ 
+ 
+/**
+ * Class Actionsinterplus
+ */
+class Actionsinterplus
+{
+	/**
+	 * @var array Hook results. Propagated to $hookmanager->resArray for later reuse
+	 */
+	public $results = array();
+
+	/**
+	 * @var string String displayed by executeHook() immediately after return
+	 */
+	public $resprints;
+
+	/**
+	 * @var array Errors
+	 */
+	public $errors = array();
+
+	/**
+	 * Constructor
+	 */
+	public function __construct()
+	{
+		global $langs;
+		
+		$langs->load('sorderplus@sorderplus');
+	}
+	
+
+
+	/**
+	 * Overloading the doActions function : replacing the parent's function with the one below
+	 *
+	 * @param   array()         $parameters     Hook metadatas (context, etc...)
+	 * @param   CommonObject    &$object        The object to process (an invoice if you are in invoice module, a propale in propale's module, etc...)
+	 * @param   string          &$action        Current action (if set). Generally create or edit or null
+	 * @param   HookManager     $hookmanager    Hook manager propagated to allow calling another hook
+	 * @return  int                             < 0 on error, 0 on success, 1 to replace standard code
+	 */
+	function doActions($parameters, &$object, &$action, $hookmanager)
+	{
+		/*$error = 0; // Error counter
+		$myvalue = 'test'; // A result value
+
+		print_r($parameters);
+		echo "action: " . $action;
+		print_r($object);
+
+		if (in_array('somecontext', explode(':', $parameters['context'])))
+		{
+		  // do something only for the context 'somecontext'
+		}
+
+		if (! $error)
+		{
+			$this->results = array('myreturn' => $myvalue);
+			$this->resprints = 'A text to show';
+			return 0; // or return 1 to replace standard code
+		}
+		else
+		{
+			$this->errors[] = 'Error message';
+			return -1;
+		}*/
+	}
+
+
+
+/*
+ * 
+  //guits debug
+		//$arr = get_defined_vars(); //affiche toutes les variables
+		ob_start(); 
+
+		var_export($msg); 
+
+		$tab_debug=ob_get_contents(); 
+		ob_end_clean(); 
+		$fichier=fopen('testcde.log','w'); 
+		fwrite($fichier,$tab_debug); 
+		fclose($fichier); 
+		//guits debug fin	 
+ * 
+ * 
+ */
+
+
+	function addMoreActionsButtons($parameters, &$object, &$action, $hookmanager)
+	{
+		global $conf;
+		
+		switch ($parameters['currentcontext']) 
+		{
+			case 'ordersuppliercard':
+			//guits j'appelle la fonction qui construit mon bouton propal
+				//$this->_printForm($conf, $object, $action, 'fichinter/card.php?id='.$object->id);
+				
+			
+				break;
+		
+		}
+		
+	}
+	
+	
+	
+	
+	private function _printForm(&$conf, &$object, $action, $url)
+	{
+		global $langs;
+		
+		$txp = $object->array_options['options_txp'];
+		$txs = $object->array_options['options_txs'];
+		 
+		 
+		?>
+		<div class="inline-block divButAction">
+			<a id="MajPxButton" class="butAction" href="#">Prise RDV</a>
+		</div>
+		
+	 	<script type="text/javascript">
+			$(document).ready(function() 
+			{
+				function promptcoefproduit(url_to, url_ajax)
+				{
+					
+					
+					
+					var tauxp = <?php echo (int) $txp; ?>;
+					var tauxs = <?php echo (int) $txs; ?>;
+				    $( "#dialog-prompt-coefproduit" ).remove();
+				    $('body').append('<div id="dialog-prompt-coefproduit"><div><p>Marge produit:</p></div><input id="tx-produit" size=30 value="'+tauxp+'" /><div><p>Marge service:</p></div><input id="tx-service" size=30 value="'+tauxs+'" /></div>');
+				    
+                    $('#tx-produit').select();
+                    $( "#dialog-prompt-coefproduit" ).dialog({
+                    	resizable: false,
+                        height:280,
+                        modal: true,
+                        title: "Marge produit / Marge service (en %):",
+                        buttons: {
+                            "Ok": function() {
+                                 $.ajax({
+                                	url: url_ajax
+                                	,data: {
+                                		fk_object: <?php echo (int) $object->id; ?>
+                                		,element: "<?php echo $object->element; ?>"
+                                		,newTauxp: $(this).find('#tx-produit').val()
+										,newTauxs: $(this).find('#tx-service').val()
+                                	}
+                                }).then(function (data) {
+                                	document.location.href=url_to;
+                                });
+
+                                $( this ).dialog( "close" );
+                            },
+                            "<?php echo $langs->trans('Cancel') ?>": function() {
+                                $( this ).dialog( "close" );
+                            }
+                        }
+                    }).keypress(function(e) {
+                    	if (e.keyCode == $.ui.keyCode.ENTER) {
+					          $('.ui-dialog').find('button:contains("Ok")').trigger('click');
+					    }
+                    });
+                    
+				}
+				
+				$('a#MajPxButton').click(function() 
+				{
+					
+			
+					promptcoefproduit(
+						'<?php echo dol_buildpath($url, 1); ?>'
+						,'<?php echo dol_buildpath('/interplus/script/interface.php', 2); ?>'
+					     
+					);
+					
+					return false;
+				});
+						
+			});
+	 	</script>
+		<?php
+	}	
+	
+	
+	
+	
+}
